@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Una Sorpresa en las Estrellas</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F5D061'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Dancing+Script:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: {
+              900: '#030712',
+              800: '#0B132B',
+              700: '#1C2541',
+            },
+            gold: {
+              300: '#FFE699',
+              400: '#F5D061',
+              500: '#E5B869',
+              600: '#C69234',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+    h1, h2, .font-celestial { font-family: 'Cinzel', serif; }
+    .font-script { font-family: 'Dancing Script', cursive; }
+
+    .glass-card {
+      background: rgba(11, 19, 43, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(245, 208, 97, 0.25);
+    }
+
+    .prescription-paper {
+      background-color: #faf8f0;
+      background-image: 
+        radial-gradient(#e2dec9 1px, transparent 1px),
+        linear-gradient(to right, rgba(239, 68, 68, 0.15) 1px, transparent 1px);
+      background-size: 20px 20px, 100% 100%;
+      background-position: 0 0, 36px 0;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 0 35px rgba(200, 180, 140, 0.35);
+    }
+
+    @keyframes ekg-dash {
+      to { stroke-dashoffset: -1000; }
+    }
+    .ekg-line {
+      stroke-dasharray: 200;
+      animation: ekg-dash 4s linear infinite;
+    }
+
+    .text-glow-gold {
+      text-shadow: 0 0 15px rgba(245, 208, 97, 0.5), 0 0 30px rgba(245, 208, 97, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-[#030712] text-slate-100 min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-gold-500 selection:text-space-900">
+  
+  <!-- Canvas Starfield -->
+  <canvas id="starfield" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+  <!-- Top Floating Header -->
+  <header class="sticky top-2 sm:top-4 z-40 w-full max-w-4xl mx-auto px-3 sm:px-4 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2 sm:gap-3 bg-space-800/80 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gold-500/30 shadow-lg">
+      <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-gold-600 to-amber-300 flex items-center justify-center text-space-900 shadow-md">
+        <i data-lucide="stethoscope" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+      </div>
+      <div>
+        <p class="text-[11px] sm:text-xs uppercase tracking-wider text-gold-400 font-semibold flex items-center gap-1">
+          <span>Receta Médica & Estrellas</span>
+          <i data-lucide="sparkles" class="w-3 h-3 text-gold-300 inline"></i>
+        </p>
+        <p class="text-[10px] sm:text-[11px] text-slate-400">Edición Especial de Cumpleaños</p>
+      </div>
+    </div>
+
+    <!-- Music Player Button -->
+    <button id="musicBtn" onclick="toggleMusic()" class="flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium backdrop-blur-md transition-all duration-300 shadow-md bg-space-800/80 border-slate-700 text-slate-300 hover:border-gold-500/50">
+      <i data-lucide="music" class="w-3.5 h-3.5 text-gold-400"></i>
+      <span id="musicText" class="text-[11px] sm:text-xs">Vibra Milo J & The Weeknd</span>
+    </button>
+  </header>
+
+  <!-- Main Container -->
+  <main class="relative z-10 w-full max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8 flex-1 flex flex-col items-center justify-center">
+    
+    <!-- STAGE 1: BIENVENIDA -->
+    <div id="stage1" class="w-full max-w-xl text-center space-y-6 sm:space-y-7 py-2 sm:py-4">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-400/30 text-gold-300 text-[11px] sm:text-xs tracking-widest uppercase shadow-sm">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 animate-spin"></i>
+        <span>Noche de Celebración • Constelaciones Vivas</span>
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+      </div>
+
+      <div class="space-y-2 px-2">
+        <h1 class="text-3xl sm:text-5xl font-celestial font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-amber-200 to-gold-400 text-glow-gold leading-tight">
+          Feliz Cumpleaños, <br />
+          <span id="displayRecipient" class="italic font-script text-4xl sm:text-6xl text-gold-200 drop-shadow-[0_0_20px_rgba(245,208,97,0.5)]">
+            Valeria
+          </span>
+        </h1>
+        <p class="text-slate-300 text-xs sm:text-base max-w-md mx-auto font-light leading-relaxed">
+          El universo tiene miles de millones de estrellas, pero ninguna brilla con tanta gracia, inteligencia y calidez como tú.
+        </p>
+      </div>
+
+      <!-- FIRST IMAGE: MICROSCOPE TISSUE HEART -->
+      <div class="relative max-w-md mx-auto w-full group px-1">
+        <div class="absolute -inset-1.5 bg-gradient-to-r from-pink-500/30 via-gold-500/30 to-cyan-500/30 rounded-3xl blur-md group-hover:blur-lg transition-all duration-500"></div>
+        
+        <div class="relative glass-card rounded-2xl p-4 sm:p-5 border border-gold-400/50 shadow-2xl text-left space-y-3">
+          <div class="flex items-center justify-between text-xs pb-2 border-b border-slate-700/60">
+            <span class="flex items-center gap-1.5 text-pink-400 font-semibold uppercase tracking-wider text-[11px] sm:text-xs">
+              <i data-lucide="dna" class="w-3.5 h-3.5 text-pink-400 animate-pulse"></i> Hallazgo Histológico Confidencial
+            </span>
+            <span class="text-gold-300 font-mono text-[10px] sm:text-[11px] bg-space-900/80 px-2 py-0.5 rounded border border-gold-500/30">
+              Aumento 40x
+            </span>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+            <div 
+              onclick="openLightbox('microscope_heart.jpg', 'Células en forma de corazón • Muestra clínica de amor')" 
+              class="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-4 border-amber-300/80 overflow-hidden shadow-2xl shadow-pink-500/20 cursor-pointer flex-shrink-0 group-hover:scale-105 transition-transform duration-300 bg-black"
+              title="Haz clic para ampliar la muestra"
+            >
+              <img 
+                src="microscope_heart.jpg" 
+                alt="Corazón en el microscopio" 
+                class="w-full h-full object-cover object-center"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end justify-center pb-1">
+                <span class="text-[10px] text-white/90 flex items-center gap-1 font-mono">
+                  <i data-lucide="eye" class="w-3 h-3"></i> Ver detalle
+                </span>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 text-center sm:text-left">
+              <p class="text-xs font-semibold text-gold-300 flex items-center justify-center sm:justify-start gap-1">
+                <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-500 fill-rose-500 inline"></i>
+                <span class="text-gold-300 font-semibold text-xs">Evidencia Clínica Irrefutable:</span>
+              </p>
+              <p class="text-xs text-slate-200 leading-relaxed italic">
+                "Hasta bajo el microscopio, tus células de medicina decidieron alinearse en forma de corazón. La ciencia y el destino sabían que estabas hecha para robarte el mío."
+              </p>
+              <p class="text-[10px] sm:text-[11px] text-slate-400 font-mono">
+                Estado: Diagnóstico de amor incurable
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="goToStage(2)" class="group inline-flex items-center justify-center gap-2.5 px-7 sm:px-8 py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-gold-500 via-amber-400 to-gold-600 text-space-900 font-semibold text-sm sm:text-base shadow-xl shadow-gold-500/30 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto">
+          <span>Explorar tus Estrellas</span>
+          <i data-lucide="chevron-right" class="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform"></i>
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-400">* Toca con calma y déjate sorprender paso a paso.</p>
+    </div>
+
+    <!-- STAGE 2: CONSTELACIONES & EKG -->
+    <div id="stage2" class="w-full space-y-6 sm:space-y-8 py-2 hidden max-w-xl">
+      <div class="text-center space-y-1.5">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-[11px] uppercase tracking-wider">
+          <i data-lucide="activity" class="w-3.5 h-3.5 animate-pulse"></i>
+          <span>Etapa II: Signos Vitales & Cualidades</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-celestial font-bold text-gold-300 text-glow-gold">
+          Constelaciones que Hablan de Ti
+        </h2>
+        <p class="text-xs text-slate-300 max-w-md mx-auto">
+          Toca cada constelación para calibrar tu diagnóstico y desbloquear el sobre sellado.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <!-- Node 1 -->
+        <div id="card-1" onclick="revealCard(1)" class="cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left glass-card border-slate-700/60 hover:border-cyan-400/60">
+          <div class="flex items-start justify-between mb-2.5">
+            <div class="p-2 rounded-xl bg-space-900/80 border border-slate-700/80 text-cyan-400">
+              <i data-lucide="stethoscope" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            </div>
+            <span id="badge-1" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border border-slate-700 bg-space-900/60 text-slate-400">Tocar para ver</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-semibold text-slate-100 mb-0.5">Vocación & Corazón</h3>
+          <p class="text-[11px] text-slate-400 font-medium mb-1.5">Ciencia & Ternura</p>
+          <p id="text-1" class="text-xs leading-relaxed text-slate-500 blur-[2px] select-none transition-all">
+            Tu dedicación a la medicina no es solo una carrera: es tu forma de regalarle luz a las personas. Tienes el corazón más noble para cuidar a los demás.
+          </p>
+        </div>
+
+        <!-- Node 2 -->
+        <div id="card-2" onclick="revealCard(2)" class="cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left glass-card border-slate-700/60 hover:border-gold-400/60">
+          <div class="flex items-start justify-between mb-2.5">
+            <div class="p-2 rounded-xl bg-space-900/80 border border-slate-700/80 text-gold-400">
+              <i data-lucide="moon" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            </div>
+            <span id="badge-2" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border border-slate-700 bg-space-900/60 text-slate-400">Tocar para ver</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-semibold text-slate-100 mb-0.5">Tu Brillo Natural</h3>
+          <p class="text-[11px] text-slate-400 font-medium mb-1.5">Noche de Estrellas</p>
+          <p id="text-2" class="text-xs leading-relaxed text-slate-500 blur-[2px] select-none transition-all">
+            Tienes una sonrisa que calma cualquier guardia difícil. Iluminas más que una noche despejada en medio de la nada.
+          </p>
+        </div>
+
+        <!-- Node 3 -->
+        <div id="card-3" onclick="revealCard(3)" class="cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left glass-card border-slate-700/60 hover:border-rose-400/60">
+          <div class="flex items-start justify-between mb-2.5">
+            <div class="p-2 rounded-xl bg-space-900/80 border border-slate-700/80 text-rose-400">
+              <i data-lucide="music" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            </div>
+            <span id="badge-3" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border border-slate-700 bg-space-900/60 text-slate-400">Tocar para ver</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-semibold text-slate-100 mb-0.5">Nuestra Sintonía</h3>
+          <p class="text-[11px] text-slate-400 font-medium mb-1.5">Vibra Milo J & The Weeknd</p>
+          <p id="text-3" class="text-xs leading-relaxed text-slate-500 blur-[2px] select-none transition-all">
+            Tu personalidad tiene ese compás perfecto: auténtica, profunda y con un estilo que se te queda grabado en el pecho todo el día.
+          </p>
+        </div>
+
+        <!-- Node 4 -->
+        <div id="card-4" onclick="revealCard(4)" class="cursor-pointer rounded-2xl p-4 transition-all duration-300 border text-left glass-card border-slate-700/60 hover:border-pink-400/60">
+          <div class="flex items-start justify-between mb-2.5">
+            <div class="p-2 rounded-xl bg-space-900/80 border border-slate-700/80 text-pink-400">
+              <i data-lucide="heart" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            </div>
+            <span id="badge-4" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border border-slate-700 bg-space-900/60 text-slate-400">Tocar para ver</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-semibold text-slate-100 mb-0.5">Diagnóstico Preliminar</h3>
+          <p class="text-[11px] text-slate-400 font-medium mb-1.5">Signos Vitales</p>
+          <p id="text-4" class="text-xs leading-relaxed text-slate-500 blur-[2px] select-none transition-all">
+            Alteración del pulso detectada: es imposible verte sonreír y que el corazón no se acelere de forma involuntaria.
+          </p>
+        </div>
+      </div>
+
+      <!-- Heartbeat / EKG Pulse Monitor -->
+      <div class="glass-card max-w-md mx-auto p-4 rounded-2xl border border-cyan-500/30 space-y-2.5 shadow-xl">
+        <div class="flex items-center justify-between text-xs">
+          <span class="flex items-center gap-1.5 text-rose-400 font-semibold uppercase tracking-wider text-[11px]">
+            <i data-lucide="activity" class="w-4 h-4 animate-pulse inline"></i> Electrocardiograma de Emoción
+          </span>
+          <span id="bpmDisplay" class="font-mono text-cyan-300 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30 text-xs">
+            78 BPM
+          </span>
+        </div>
+
+        <div class="h-12 sm:h-14 w-full bg-space-900/90 rounded-xl overflow-hidden relative flex items-center justify-center border border-slate-800">
+          <svg class="w-full h-full text-rose-500" viewBox="0 0 500 80" preserveAspectRatio="none">
+            <path
+              d="M0,40 L100,40 L115,25 L125,55 L135,10 L145,70 L155,35 L165,45 L175,40 L280,40 L295,20 L305,60 L315,5 L325,75 L335,30 L345,50 L355,40 L500,40"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              class="ekg-line drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+            />
+          </svg>
+        </div>
+
+        <div class="flex items-center justify-between pt-1 gap-2">
+          <p id="pulseText" class="text-[11px] text-slate-400 truncate">Toca para medir el pulso que provocas:</p>
+          <button onclick="measurePulse()" class="px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-300 hover:bg-rose-500 hover:text-white transition-all text-xs font-semibold flex items-center gap-1.5 active:scale-95 flex-shrink-0">
+            <i data-lucide="heart" class="w-3.5 h-3.5 fill-current"></i>
+            <span>Palpitar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action to Stage 3 -->
+      <div class="text-center space-y-3 pt-1">
+        <div class="text-xs text-slate-400">
+          Progreso: <span id="progressText" class="text-gold-400 font-bold">0 de 4</span> constelaciones exploradas
+        </div>
+        <div class="flex flex-col sm:flex-row justify-center gap-2.5">
+          <button onclick="goToStage(1)" class="px-4 py-2.5 rounded-full border border-slate-700 text-xs text-slate-400 hover:text-slate-200 order-2 sm:order-1">
+            Volver a portada
+          </button>
+          <button id="openStage3Btn" onclick="goToStage(3)" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 bg-gradient-to-r from-gold-500 to-amber-400 text-space-900 shadow-lg shadow-gold-500/30 hover:scale-105 active:scale-95 order-1 sm:order-2">
+            <span>Abrir Expediente Confidencial</span>
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 3: SOBRE SELLADO & EXPEDIENTE -->
+    <div id="stage3" class="w-full max-w-xl py-1 space-y-5 text-center hidden">
+      <div class="flex items-center justify-between px-1">
+        <button onclick="goToStage(2)" class="text-xs text-slate-400 hover:text-gold-300 flex items-center gap-1 transition-colors">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Volver a constelaciones
+        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="triggerConfetti()" class="px-3 py-1 rounded-full bg-gold-500/10 border border-gold-400/40 text-gold-300 text-xs flex items-center gap-1 hover:bg-gold-500/20">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Estrellas
+          </button>
+          <button onclick="toggleEditor()" class="px-3 py-1 rounded-full bg-space-800 border border-slate-700 text-slate-300 text-xs flex items-center gap-1 hover:border-gold-400 hover:text-gold-300">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            <span id="editBtnText">Editar texto</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Edit Panel -->
+      <div id="editPanel" class="glass-card p-4 sm:p-5 rounded-2xl border border-gold-400/60 text-left space-y-3.5 shadow-2xl max-w-xl mx-auto hidden">
+        <h4 class="text-xs sm:text-sm font-semibold text-gold-300 flex items-center gap-2">
+          <i data-lucide="edit-3" class="w-4 h-4"></i> Personaliza tu Carta & Receta
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] text-slate-300 font-medium block mb-1">Nombre de Ella:</label>
+            <input id="inputRecipient" type="text" class="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none" value="Valeria">
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-300 font-medium block mb-1">Tu Firma / Nombre:</label>
+            <input id="inputSender" type="text" class="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none" value="Mateo">
+          </div>
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-300 font-medium block mb-1">Mensaje de la Carta:</label>
+          <textarea id="inputText" rows="6" class="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none leading-relaxed"></textarea>
+        </div>
+        <div class="text-right">
+          <button onclick="saveLetterEdits()" class="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-400 text-space-900 text-xs font-semibold flex items-center gap-1.5 ml-auto">
+            <i data-lucide="check" class="w-4 h-4"></i> Guardar cambios
+          </button>
+        </div>
+      </div>
+
+      <!-- Unopened Envelope (Golden Wax Seal) -->
+      <div id="unopenedEnvelope" class="max-w-md mx-auto py-4 sm:py-6 space-y-4 px-1">
+        <div onclick="openTheEnvelope()" class="group relative cursor-pointer rounded-2xl bg-gradient-to-b from-[#1E293B] to-[#0F172A] border-2 border-gold-400/50 p-6 sm:p-8 shadow-2xl shadow-gold-500/20 hover:border-gold-400 transition-all text-center space-y-4">
+          <div class="text-[11px] sm:text-xs uppercase font-mono tracking-widest text-gold-400 font-semibold">
+            Expediente Confidencial & Carta Personal
+          </div>
+          <p class="text-sm text-slate-300 font-light">
+            Para: <span id="envelopeRecipient" class="text-gold-200 font-medium">Valeria</span>
+          </p>
+          <div class="relative inline-block my-2">
+            <div class="w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-br from-amber-500 via-gold-500 to-amber-700 shadow-xl shadow-gold-600/50 flex flex-col items-center justify-center border-4 border-amber-300 group-hover:scale-110 active:scale-95 transition-transform duration-300">
+              <i data-lucide="stethoscope" class="w-8 h-8 text-space-900"></i>
+              <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-600 fill-rose-600 absolute bottom-3"></i>
+            </div>
+            <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] sm:text-[11px] font-mono text-gold-300 bg-space-900/90 px-2.5 py-0.5 rounded border border-gold-500/40">
+              Toca el sello para abrir
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 pt-3">
+            Emitido bajo el influjo de las estrellas y un corazón emocionado.
+          </p>
+        </div>
+      </div>
+
+      <!-- Opened Prescription Letter (Warm paper) -->
+      <div id="openedLetter" class="w-full prescription-paper text-slate-800 rounded-2xl p-4 sm:p-8 shadow-2xl border-2 sm:border-4 border-amber-200/80 text-left space-y-4 sm:space-y-5 relative overflow-hidden hidden">
+        <div class="border-b-2 border-slate-300 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-1.5 sm:gap-2 text-rose-700 font-bold text-base sm:text-lg tracking-tight">
+              <i data-lucide="heart" class="w-5 h-5 fill-rose-600 text-rose-600 flex-shrink-0"></i>
+              <span>HOSPITAL GENERAL DE LAS ESTRELLAS</span>
+            </div>
+            <p class="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+              DEPARTAMENTO DE CARDIOLOGÍA EMOCIONAL & FELICIDAD
+            </p>
+            <p class="text-[9px] sm:text-[10px] text-slate-400">Folio: CUMPLE-2026-MED • Registro Estelar Auténtico</p>
+          </div>
+          <div class="self-end sm:self-auto text-right">
+            <span class="inline-block px-2.5 py-0.5 rounded bg-rose-100 text-rose-800 font-mono text-[10px] sm:text-xs font-bold border border-rose-300">
+              CONFIDENCIAL
+            </span>
+            <p class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5 font-mono">HOY Y SIEMPRE</p>
+          </div>
+        </div>
+
+        <!-- Info Table -->
+        <div class="bg-white/80 rounded-xl p-3 border border-slate-200 text-xs grid grid-cols-1 sm:grid-cols-2 gap-2 shadow-sm font-sans">
+          <div>
+            <span class="text-slate-400 font-semibold block text-[10px]">PACIENTE DE HONOR:</span>
+            <span id="letterPatientName" class="text-slate-900 font-bold text-sm">Valeria</span>
+          </div>
+          <div>
+            <span class="text-slate-400 font-semibold block text-[10px]">VOCACIÓN:</span>
+            <span class="text-slate-800 font-medium">Futura Doctora Brillante</span>
+          </div>
+          <div>
+            <span class="text-slate-400 font-semibold block text-[10px]">FRECUENCIA CARDÍACA:</span>
+            <span class="text-rose-600 font-bold font-mono">140 BPM (Enamoramiento Agudo)</span>
+          </div>
+          <div>
+            <span class="text-slate-400 font-semibold block text-[10px]">SOUNDTRACK INDICADO:</span>
+            <span class="text-slate-800 font-medium">Milo J & The Weeknd</span>
+          </div>
+        </div>
+
+        <!-- SECOND IMAGE: POLAROID IN MEDICAL CHART -->
+        <div class="bg-amber-50/90 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-amber-300 shadow-sm flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+          <div 
+            onclick="openLightbox('gym_heart.jpg', 'Fuerza y corazón dedicado para ti')" 
+            class="relative w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden border-2 border-white shadow-md bg-black flex-shrink-0 cursor-pointer group hover:scale-105 transition-transform"
+            title="Haz clic para ver foto completa"
+          >
+            <img 
+              src="gym_heart.jpg" 
+              alt="Corazón y fuerza" 
+              class="w-full h-full object-cover"
+            />
+            <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <i data-lucide="eye" class="w-5 h-5 text-white"></i>
+            </div>
+          </div>
+
+          <div class="space-y-1 text-center sm:text-left">
+            <span class="inline-block px-2 py-0.5 rounded bg-rose-200/80 text-rose-800 text-[10px] font-bold font-mono uppercase">
+              Anexo Fotográfico #01
+            </span>
+            <p class="text-xs font-bold text-slate-800">
+              Evidencia de Fuerza & Corazón
+            </p>
+            <p class="text-xs text-slate-600 leading-relaxed italic">
+              "Para recordarte que aquí siempre tienes a alguien con la fuerza y las ganas de cuidarte, celebrar cada guardia aprobada y recordarte lo especial que eres."
+            </p>
+          </div>
+        </div>
+
+        <!-- Diagnosis -->
+        <div class="space-y-1">
+          <p class="text-xs font-bold text-rose-700 tracking-wide uppercase flex items-center gap-1.5">
+            <i data-lucide="activity" class="w-4 h-4 text-rose-600"></i> Diagnóstico Definitivo:
+          </p>
+          <p class="text-xs sm:text-sm text-slate-700 bg-amber-50/80 p-3 rounded-lg border-l-4 border-amber-500 italic">
+            "Paciente diagnosticada con una sonrisa terapéutica irresistible, inteligencia admirable y la capacidad de detener el tiempo con su sola presencia."
+          </p>
+        </div>
+
+        <!-- Rx Prescription -->
+        <div class="space-y-2 border-t border-b border-dashed border-slate-300 py-2.5">
+          <p class="text-xs font-bold text-slate-800 tracking-wider flex items-center gap-1.5 font-mono">
+            <i data-lucide="pill" class="w-4 h-4 text-cyan-600"></i> TRATAMIENTO PRESCRITO (Rx):
+          </p>
+          <ul class="text-xs text-slate-700 space-y-1.5 pl-1 sm:pl-2">
+            <li class="flex items-start gap-2">
+              <span class="text-gold-600 font-bold">1.</span>
+              <span><strong>Dosis masiva de abrazos y risas:</strong> Administrar sin límite todos los días de este nuevo año.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-gold-600 font-bold">2.</span>
+              <span><strong>Cero estrés en tus guardias y exámenes:</strong> Recordar siempre que eres capaz de lograr todo lo que te propongas.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-gold-600 font-bold">3.</span>
+              <span><strong>Momento especial diario:</strong> Poner tu canción favorita de Milo J o The Weeknd y sonreír.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Personal Letter -->
+        <div class="space-y-2 pt-1">
+          <p class="text-xs font-bold text-slate-800 tracking-wider font-mono flex items-center gap-1.5">
+            <i data-lucide="file-text" class="w-4 h-4 text-amber-600"></i> NOTA MÉDICA PERSONAL:
+          </p>
+          <div id="letterBody" class="text-xs sm:text-sm text-slate-800 leading-relaxed font-sans whitespace-pre-line bg-white/60 p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm">
+          </div>
+        </div>
+
+        <!-- Signature -->
+        <div class="pt-3 flex flex-row items-end justify-between border-t border-slate-300 gap-2">
+          <div class="border-2 border-dashed border-rose-400 rounded-xl p-1.5 sm:p-2 text-center rotate-[-3deg] bg-rose-50/60">
+            <p class="text-[9px] sm:text-[10px] font-mono font-bold text-rose-700 uppercase">APROBADO CON TODO EL CARIÑO</p>
+            <p class="text-[8px] sm:text-[9px] text-rose-500">Válido de por vida</p>
+          </div>
+          <div class="text-right space-y-0.5">
+            <div id="letterSignature" class="font-script text-xl sm:text-2xl text-slate-900 border-b border-slate-400 pb-0.5 inline-block">
+              Mateo
+            </div>
+            <p class="text-[10px] text-slate-400 font-mono block">Firma del Remitente</p>
+          </div>
+        </div>
+
+        <div class="pt-2 text-center flex flex-col sm:flex-row items-center justify-center gap-2">
+          <button onclick="triggerConfetti()" class="w-full sm:w-auto px-4 py-2 rounded-full bg-slate-900 text-gold-300 font-semibold text-xs shadow-md hover:bg-slate-800 flex items-center justify-center gap-1.5">
+            <i data-lucide="sparkles" class="w-4 h-4 text-gold-400"></i>
+            <span>Lanzar Estrellas Doradas</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Photo Lightbox Modal -->
+  <div id="photoLightbox" onclick="closeLightbox()" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden items-center justify-center p-3">
+    <div class="relative max-w-lg w-full bg-space-900 rounded-2xl border border-gold-400/60 p-3 shadow-2xl" onclick="event.stopPropagation()">
+      <button onclick="closeLightbox()" class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg font-bold">
+        ✕
+      </button>
+      <img id="lightboxImg" src="" alt="Foto" class="w-full h-auto max-h-[72vh] object-contain rounded-xl">
+      <p id="lightboxCaption" class="text-center text-xs text-gold-300 font-mono pt-2.5 pb-0.5"></p>
+    </div>
+  </div>
+
+  <footer class="relative z-10 w-full py-3 sm:py-4 text-center text-[10px] sm:text-[11px] text-slate-400 border-t border-slate-800/80 bg-space-900/60 backdrop-blur-sm px-2">
+    <p class="flex items-center justify-center gap-1">
+      <span>Hecho especialmente bajo las estrellas</span>
+      <i data-lucide="heart" class="w-3 h-3 text-rose-500 fill-rose-500 inline"></i>
+      <span id="footerRecipient">para Valeria</span>
+    </p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    let defaultLetter = `Quién diría que una fiesta de Halloween terminaría siendo el lugar donde te conocería.
+
+Me gusta esa mezcla tan bonita que tienes entre lo tierna y divertida. Espero que sigas esa espontaneidad, que te animes a mis planes locos y que nunca te falten ganas de seguirme el ambiente JAJAJA.
+
+Sé que la medicina ocupa gran parte de tu tiempo, así que espero que nunca te falten motivos para sonreír, incluso en esos días en los que los libros y las clases parecen no terminar.
+
+No sé qué pueda surgir de todo esto, pero sí me gustaría seguir conociéndote, 
+
+Por ahora, solo quería dejarte este pequeño detalle y sacarte una sonrisa.
+
+Con cariño Mateo.`;
+
+    let storedRecipient = localStorage.getItem('recipient_name');
+    let recipient = (storedRecipient && storedRecipient !== 'Mi Futura Doctora Favorita' && storedRecipient !== 'Kimberly (Val)' && storedRecipient !== 'Valentina') ? storedRecipient : 'Valeria';
+    localStorage.setItem('recipient_name', 'Valeria');
+
+    let storedSender = localStorage.getItem('sender_name');
+    let sender = (storedSender && storedSender !== 'Alguien que no deja de pensar en ti') ? storedSender : 'Mateo';
+    localStorage.setItem('sender_name', 'Mateo');
+
+    let storedContent = localStorage.getItem('letter_content');
+    let content = (storedContent && !storedContent.includes('Hoy no es un día cualquiera')) ? storedContent : defaultLetter;
+    localStorage.setItem('letter_content', defaultLetter);
+
+    function updateDisplays() {
+      document.getElementById('displayRecipient').innerText = recipient;
+      document.getElementById('envelopeRecipient').innerText = recipient;
+      document.getElementById('letterPatientName').innerText = recipient;
+      document.getElementById('letterSignature').innerText = sender;
+      document.getElementById('letterBody').innerText = content;
+      document.getElementById('inputText').value = content;
+      document.getElementById('inputRecipient').value = recipient;
+      document.getElementById('inputSender').value = sender;
+      document.getElementById('footerRecipient').innerText = 'para ' + recipient;
+    }
+    updateDisplays();
+
+    function goToStage(stageNum) {
+      document.getElementById('stage1').classList.add('hidden');
+      document.getElementById('stage2').classList.add('hidden');
+      document.getElementById('stage3').classList.add('hidden');
+
+      if (stageNum === 1) document.getElementById('stage1').classList.remove('hidden');
+      if (stageNum === 2) document.getElementById('stage2').classList.remove('hidden');
+      if (stageNum === 3) document.getElementById('stage3').classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      triggerConfetti();
+      lucide.createIcons();
+    }
+
+    let unlocked = new Set();
+    function revealCard(num) {
+      unlocked.add(num);
+      const text = document.getElementById('text-' + num);
+      const badge = document.getElementById('badge-' + num);
+      const card = document.getElementById('card-' + num);
+
+      text.classList.remove('blur-[2px]', 'text-slate-500', 'select-none');
+      text.classList.add('text-slate-200');
+      badge.innerText = 'Revelada';
+      badge.classList.remove('border-slate-700', 'bg-space-900/60', 'text-slate-400');
+      badge.classList.add('border-gold-400/60', 'bg-gold-500/20', 'text-gold-300');
+      card.classList.add('border-gold-400/80', 'scale-[1.01]');
+
+      document.getElementById('progressText').innerText = unlocked.size + ' de 4';
+      triggerConfetti();
+    }
+
+    let pulseCount = 0;
+    let bpm = 78;
+    function measurePulse() {
+      pulseCount++;
+      bpm = bpm < 145 ? bpm + 12 : 82;
+      document.getElementById('bpmDisplay').innerText = bpm + ' BPM';
+      document.getElementById('pulseText').innerText = 'Latidos registrados: Taquicardia (' + pulseCount + ')';
+      triggerConfetti();
+    }
+
+    function openTheEnvelope() {
+      document.getElementById('unopenedEnvelope').classList.add('hidden');
+      document.getElementById('openedLetter').classList.remove('hidden');
+      lucide.createIcons();
+      for (let i = 0; i < 4; i++) {
+        setTimeout(triggerConfetti, i * 300);
+      }
+    }
+
+    function toggleEditor() {
+      const panel = document.getElementById('editPanel');
+      panel.classList.toggle('hidden');
+      document.getElementById('editBtnText').innerText = panel.classList.contains('hidden') ? 'Editar texto' : 'Cerrar editor';
+    }
+
+    function saveLetterEdits() {
+      recipient = document.getElementById('inputRecipient').value;
+      sender = document.getElementById('inputSender').value;
+      content = document.getElementById('inputText').value;
+
+      localStorage.setItem('recipient_name', recipient);
+      localStorage.setItem('sender_name', sender);
+      localStorage.setItem('letter_content', content);
+
+      updateDisplays();
+      toggleEditor();
+      triggerConfetti();
+    }
+
+    function triggerConfetti() {
+      confetti({
+        particleCount: 55,
+        spread: 75,
+        origin: { y: 0.6 },
+        colors: ['#F5D061', '#E5B869', '#38BDF8', '#F43F5E']
+      });
+    }
+
+    function openLightbox(imgSrc, caption) {
+      document.getElementById('lightboxImg').src = imgSrc;
+      document.getElementById('lightboxCaption').innerText = caption;
+      const box = document.getElementById('photoLightbox');
+      box.classList.remove('hidden');
+      box.classList.add('flex');
+    }
+
+    function closeLightbox() {
+      const box = document.getElementById('photoLightbox');
+      box.classList.add('hidden');
+      box.classList.remove('flex');
+    }
+
+    // Web Audio Synthesizer
+    let audioCtx = null;
+    let synthTimer = null;
+    let isPlaying = false;
+
+    function toggleMusic() {
+      if (isPlaying) {
+        if (synthTimer) clearInterval(synthTimer);
+        if (audioCtx) audioCtx.close();
+        audioCtx = null;
+        isPlaying = false;
+        document.getElementById('musicText').innerText = 'Vibra Milo J & The Weeknd';
+        document.getElementById('musicBtn').classList.remove('border-gold-400', 'text-gold-300', 'bg-gold-500/20');
+      } else {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContext();
+          const scale = [185.0, 220.0, 246.94, 277.18, 329.63, 369.99, 440.0, 493.88, 554.37, 659.25];
+          let step = 0;
+
+          const playNote = (freq) => {
+            if (!audioCtx || audioCtx.state === 'closed') return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(750, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.05, audioCtx.currentTime + 0.3);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.0);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 3.0);
+          };
+
+          synthTimer = setInterval(() => {
+            const idx = (step * 3) % scale.length;
+            playNote(scale[idx]);
+            if (Math.random() > 0.4) playNote(scale[(idx + 4) % scale.length]);
+            step++;
+          }, 700);
+
+          isPlaying = true;
+          document.getElementById('musicText').innerText = 'Sintonía Activa';
+          document.getElementById('musicBtn').classList.add('border-gold-400', 'text-gold-300', 'bg-gold-500/20');
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+    }
+
+    // Dynamic Starfield
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const starCount = Math.floor((width * height) / 2200);
+    const stars = Array.from({ length: starCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      radius: Math.random() * 1.8 + 0.4,
+      baseAlpha: Math.random() * 0.7 + 0.3,
+      alpha: Math.random(),
+      fadeSpeed: Math.random() * 0.02 + 0.005,
+      fadeIn: Math.random() > 0.5,
+      isGold: Math.random() > 0.7,
+      hasCross: Math.random() > 0.85
+    }));
+
+    const shootingStars = [];
+    function createShootingStar() {
+      if (shootingStars.length < 3 && Math.random() < 0.04) {
+        shootingStars.push({
+          x: Math.random() * width,
+          y: Math.random() * (height * 0.5),
+          len: Math.random() * 100 + 60,
+          speed: Math.random() * 10 + 7,
+          angle: (Math.PI / 4) + (Math.random() * 0.2 - 0.1),
+          alpha: 1,
+        });
+      }
+    }
+
+    const dustParticles = Array.from({ length: 25 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: -Math.random() * 0.5 - 0.2,
+      radius: Math.random() * 2 + 1,
+      alpha: Math.random() * 0.6 + 0.2,
+    }));
+
+    let tick = 0;
+    function renderStars() {
+      tick++;
+      ctx.clearRect(0, 0, width, height);
+
+      const grad = ctx.createRadialGradient(width * 0.5, height * 0.3, 80, width * 0.5, height * 0.5, width * 0.9);
+      grad.addColorStop(0, '#0f1738');
+      grad.addColorStop(0.4, '#080d21');
+      grad.addColorStop(1, '#02040a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      for (let i = 0; i < stars.length; i += 3) {
+        for (let j = i + 1; j < stars.length; j += 4) {
+          const dx = stars[i].x - stars[j].x;
+          const dy = stars[i].y - stars[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 85) {
+            const lineAlpha = (1 - dist / 85) * 0.12 * Math.min(stars[i].alpha, stars[j].alpha);
+            ctx.beginPath();
+            ctx.moveTo(stars[i].x, stars[i].y);
+            ctx.lineTo(stars[j].x, stars[j].y);
+            ctx.strokeStyle = `rgba(245, 208, 97, ${lineAlpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      stars.forEach(s => {
+        s.x += s.vx;
+        s.y += s.vy;
+
+        if (s.x < 0) s.x = width;
+        if (s.x > width) s.x = 0;
+        if (s.y < 0) s.y = height;
+        if (s.y > height) s.y = 0;
+
+        if (s.fadeIn) {
+          s.alpha += s.fadeSpeed;
+          if (s.alpha >= s.baseAlpha) s.fadeIn = false;
+        } else {
+          s.alpha -= s.fadeSpeed;
+          if (s.alpha <= 0.05) {
+            s.fadeIn = true;
+            if (Math.random() > 0.6) {
+              s.x = Math.random() * width;
+              s.y = Math.random() * height;
+            }
+          }
+        }
+
+        const a = Math.max(0, Math.min(1, s.alpha));
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fillStyle = s.isGold ? `rgba(245, 208, 97, ${a})` : `rgba(224, 235, 255, ${a})`;
+        ctx.shadowBlur = s.isGold ? 10 * a : 5 * a;
+        ctx.shadowColor = s.isGold ? '#F5D061' : '#A0C4FF';
+        ctx.fill();
+
+        if (s.hasCross && a > 0.5) {
+          const arm = s.radius * 3.5 * a;
+          ctx.beginPath();
+          ctx.moveTo(s.x - arm, s.y);
+          ctx.lineTo(s.x + arm, s.y);
+          ctx.moveTo(s.x, s.y - arm);
+          ctx.lineTo(s.x, s.y + arm);
+          ctx.strokeStyle = s.isGold ? `rgba(255, 230, 153, ${a * 0.7})` : `rgba(255, 255, 255, ${a * 0.7})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      });
+
+      dustParticles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y < 0) {
+          p.y = height + 10;
+          p.x = Math.random() * width;
+        }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(245, 208, 97, ${p.alpha * 0.4})`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#F5D061';
+        ctx.fill();
+      });
+
+      createShootingStar();
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const s = shootingStars[i];
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - s.len * Math.cos(s.angle), s.y - s.len * Math.sin(s.angle));
+        ctx.strokeStyle = `rgba(245, 208, 97, ${s.alpha})`;
+        ctx.lineWidth = 2.5;
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = '#F5D061';
+        ctx.stroke();
+
+        s.x += s.speed * Math.cos(s.angle);
+        s.y += s.speed * Math.sin(s.angle);
+        s.alpha -= 0.022;
+
+        if (s.alpha <= 0 || s.x > width || s.y > height) {
+          shootingStars.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(renderStars);
+    }
+    renderStars();
+  </script>
+</body>
+</html>

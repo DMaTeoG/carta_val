@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  h1, h2, .font-serif-celestial {
+    font-family: 'Cinzel', serif;
+  }
+  
+  .font-script {
+    font-family: 'Dancing Script', cursive;
+  }
+
+  .font-doctor {
+    font-family: 'Reenie Beanie', cursive;
+  }
+}
+
+/* Custom Starfield Canvas Overlay */
+.stars-bg {
+  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+}
+
+/* Glassmorphism */
+.glass-card {
+  background: rgba(16, 24, 48, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(245, 208, 97, 0.2);
+}
+
+.glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card-hover:hover {
+  background: rgba(22, 33, 62, 0.85);
+  border-color: rgba(245, 208, 97, 0.6);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px -10px rgba(245, 208, 97, 0.25);
+}
+
+/* Medical Prescription Vintage Paper */
+.prescription-paper {
+  background-color: #faf8f0;
+  background-image: 
+    radial-gradient(#e2dec9 1px, transparent 1px),
+    linear-gradient(to right, rgba(239, 68, 68, 0.2) 1px, transparent 1px);
+  background-size: 20px 20px, 100% 100%;
+  background-position: 0 0, 40px 0;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(200, 180, 140, 0.3);
+}
+
+/* Wax Seal animation */
+@keyframes wax-shine {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Pulse Heartbeat for EKG */
+@keyframes ekg-dash {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+.ekg-line {
+  stroke-dasharray: 200;
+  animation: ekg-dash 4s linear infinite;
+}
+
+/* Glowing text */
+.text-glow-gold {
+  text-shadow: 0 0 15px rgba(245, 208, 97, 0.6), 0 0 30px rgba(245, 208, 97, 0.3);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #030712;
+}
+::-webkit-scrollbar-thumb {
+  background: #1C2541;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 208, 97, 0.2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F5D061;
+}
