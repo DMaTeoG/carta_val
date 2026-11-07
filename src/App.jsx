@@ -70,8 +70,13 @@ Con cariño Mateo.`;
     return stored;
   });
 
-  // Music Player State
+  // Music Player State (Milo J - M.A.I at 0:46)
   const [isPlaying, setIsPlaying] = useState(false);
+  const ytPlayerRef = useRef(null);
+  const [ytReady, setYtReady] = useState(false);
+  const [hasStartedAuto, setHasStartedAuto] = useState(false);
+
+  // Fallback Web Audio Synth
   const audioContextRef = useRef(null);
   const synthIntervalRef = useRef(null);
 
@@ -94,7 +99,156 @@ Con cariño Mateo.`;
     triggerStarConfetti();
   };
 
-  // Ultra-Dynamic Starfield Canvas with Warm Gold & Midnight Blue
+  // Initialize YouTube IFrame API for Milo J - M.A.I
+  useEffect(() => {
+    const initYT = () => {
+      if (window.YT && window.YT.Player) {
+        new window.YT.Player('youtube-audio-player', {
+          videoId: 'MldGX_mbS-o',
+          playerVars: {
+            start: 46,
+            autoplay: 0,
+            controls: 0,
+            playsinline: 1,
+            loop: 1,
+            playlist: 'MldGX_mbS-o',
+            modestbranding: 1,
+            rel: 0,
+          },
+          events: {
+            onReady: (event) => {
+              ytPlayerRef.current = event.target;
+              event.target.seekTo(46, true);
+              setYtReady(true);
+            },
+            onStateChange: (event) => {
+              if (event.data === window.YT.PlayerState.PLAYING) {
+                setIsPlaying(true);
+              } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+                setIsPlaying(false);
+              }
+            },
+          },
+        });
+      }
+    };
+
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      window.onYouTubeIframeAPIReady = initYT;
+    } else {
+      initYT();
+    }
+  }, []);
+
+  // Music toggle handler
+  const toggleMusic = () => {
+    if (ytPlayerRef.current) {
+      try {
+        const state = ytPlayerRef.current.getPlayerState();
+        if (state === 1) { // 1 = playing
+          ytPlayerRef.current.pauseVideo();
+          setIsPlaying(false);
+        } else {
+          // If first time or ended, make sure it starts at second 46
+          if (state === -1 || state === 0 || state === 5) {
+            ytPlayerRef.current.seekTo(46, true);
+          }
+          ytPlayerRef.current.playVideo();
+          setIsPlaying(true);
+        }
+        return;
+      } catch (e) {
+        console.warn("YouTube player control fallback", e);
+      }
+    }
+
+    // Fallback synthesizer if YouTube player is not ready
+    if (isPlaying) {
+      stopCelestialSynth();
+    } else {
+      startCelestialSynth();
+    }
+  };
+
+  const playSongFrom46 = () => {
+    if (!hasStartedAuto && ytPlayerRef.current) {
+      try {
+        ytPlayerRef.current.seekTo(46, true);
+        ytPlayerRef.current.playVideo();
+        setIsPlaying(true);
+        setHasStartedAuto(true);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+  };
+
+  // Fallback Procedural Celestial Audio
+  const startCelestialSynth = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      audioContextRef.current = ctx;
+
+      const scale = [185.0, 220.0, 246.94, 277.18, 329.63, 369.99, 440.0, 493.88, 554.37, 659.25];
+      let step = 0;
+
+      const playNote = (freq, duration = 2.5) => {
+        if (!ctx || ctx.state === 'closed') return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      };
+
+      synthIntervalRef.current = setInterval(() => {
+        const noteIndex = (step * 3) % scale.length;
+        playNote(scale[noteIndex], 3.5);
+        if (Math.random() > 0.4) {
+          playNote(scale[(noteIndex + 4) % scale.length], 4.0);
+        }
+        step++;
+      }, 700);
+
+      setIsPlaying(true);
+    } catch (e) {
+      console.warn("Audio Context init fallback", e);
+    }
+  };
+
+  const stopCelestialSynth = () => {
+    if (synthIntervalRef.current) {
+      clearInterval(synthIntervalRef.current);
+      synthIntervalRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+    setIsPlaying(false);
+  };
+
+  // Ultra-Dynamic Starfield Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -285,75 +439,6 @@ Con cariño Mateo.`;
     };
   }, []);
 
-  // Web Audio Synthesizer
-  const startCelestialSynth = () => {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const ctx = new AudioCtx();
-      audioContextRef.current = ctx;
-
-      const scale = [185.0, 220.0, 246.94, 277.18, 329.63, 369.99, 440.0, 493.88, 554.37, 659.25];
-      let step = 0;
-
-      const playNote = (freq, duration = 2.5) => {
-        if (!ctx || ctx.state === 'closed') return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const filter = ctx.createBiquadFilter();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(800, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 0.4);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + duration);
-      };
-
-      synthIntervalRef.current = setInterval(() => {
-        const noteIndex = (step * 3) % scale.length;
-        playNote(scale[noteIndex], 3.5);
-        if (Math.random() > 0.4) {
-          playNote(scale[(noteIndex + 4) % scale.length], 4.0);
-        }
-        step++;
-      }, 700);
-
-      setIsPlaying(true);
-    } catch (e) {
-      console.warn("Audio Context init fallback", e);
-    }
-  };
-
-  const stopCelestialSynth = () => {
-    if (synthIntervalRef.current) {
-      clearInterval(synthIntervalRef.current);
-      synthIntervalRef.current = null;
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close().catch(() => {});
-      audioContextRef.current = null;
-    }
-    setIsPlaying(false);
-  };
-
-  const toggleMusic = () => {
-    if (isPlaying) {
-      stopCelestialSynth();
-    } else {
-      startCelestialSynth();
-    }
-  };
-
   const triggerStarConfetti = () => {
     confetti({
       particleCount: 70,
@@ -387,7 +472,7 @@ Con cariño Mateo.`;
       title: 'Nuestra Sintonía',
       icon: Music,
       accent: 'text-rose-400',
-      tag: 'Vibra Milo J & The Weeknd',
+      tag: 'Milo J - M.A.I',
       text: 'Tu personalidad tiene ese compás perfecto: auténtica, profunda y con un estilo que se te queda grabado en el pecho todo el día.',
     },
     {
@@ -443,6 +528,12 @@ Con cariño Mateo.`;
       {/* Background Starfield */}
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
 
+      {/* Hidden YouTube IFrame Player (Audio Only) */}
+      <div 
+        id="youtube-audio-player" 
+        className="pointer-events-none absolute -top-[9999px] -left-[9999px] w-1 h-1 opacity-0"
+      />
+
       {/* Floating Header */}
       <header className="sticky top-2 sm:top-4 z-40 w-full max-w-4xl px-3 sm:px-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3 bg-space-800/80 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gold-500/30 shadow-lg shadow-black/40">
@@ -458,7 +549,7 @@ Con cariño Mateo.`;
           </div>
         </div>
 
-        {/* Ambient Player Button */}
+        {/* Ambient Player Button: Milo J - M.A.I */}
         <button
           onClick={toggleMusic}
           className={`group flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium backdrop-blur-md transition-all duration-300 shadow-md ${
@@ -466,7 +557,7 @@ Con cariño Mateo.`;
               ? 'bg-gold-500/20 border-gold-400 text-gold-300 shadow-gold-500/20'
               : 'bg-space-800/80 border-slate-700 text-slate-300 hover:border-gold-500/50'
           }`}
-          title="Música ambiental estelar"
+          title="Toca para reproducir Milo J - M.A.I (0:46)"
         >
           <div className="flex items-center gap-1">
             {isPlaying ? (
@@ -479,8 +570,8 @@ Con cariño Mateo.`;
               <Play className="w-3.5 h-3.5 fill-current text-gold-400" />
             )}
           </div>
-          <span className="text-[11px] sm:text-xs">
-            {isPlaying ? 'Sintonía Activa' : 'Vibra Milo J & The Weeknd'}
+          <span className="text-[11px] sm:text-xs font-mono">
+            {isPlaying ? 'Milo J - M.A.I' : 'Milo J - M.A.I (0:46)'}
           </span>
         </button>
       </header>
@@ -560,10 +651,11 @@ Con cariño Mateo.`;
               </div>
             </div>
 
-            {/* Action Button */}
+            {/* Action Button: Starts music automatically from second 46 if not yet played */}
             <div className="pt-2">
               <button
                 onClick={() => {
+                  playSongFrom46();
                   setStage(2);
                   triggerStarConfetti();
                 }}
@@ -803,7 +895,7 @@ Con cariño Mateo.`;
               </div>
             )}
 
-            {/* UNOPENED ENVELOPE (WARM GOLDEN WAX SEAL) */}
+            {/* UNOPENED ENVELOPE */}
             {!envelopeOpened ? (
               <div className="max-w-md mx-auto py-4 sm:py-6 space-y-4 animate-float px-1">
                 <div 
@@ -818,7 +910,6 @@ Con cariño Mateo.`;
                     Para: <span className="text-gold-200 font-medium">{recipientName}</span>
                   </p>
 
-                  {/* Golden Wax Seal */}
                   <div className="relative inline-block my-2">
                     <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-br from-amber-500 via-gold-500 to-amber-700 shadow-xl shadow-gold-600/50 flex flex-col items-center justify-center border-4 border-amber-300 group-hover:scale-110 active:scale-95 transition-transform duration-300">
                       <Stethoscope className="w-8 h-8 text-space-900" />
@@ -835,7 +926,7 @@ Con cariño Mateo.`;
                 </div>
               </div>
             ) : (
-              /* OPENED PRESCRIPTION & LETTER (WARM PAPER WITH CARDIOLOGY TOUCH) */
+              /* OPENED PRESCRIPTION & LETTER */
               <div className="w-full prescription-paper text-slate-800 rounded-2xl p-4 sm:p-8 shadow-2xl border-2 sm:border-4 border-amber-200/80 text-left space-y-4 sm:space-y-5 animate-fade-in relative overflow-hidden">
                 
                 {/* Header */}
@@ -876,7 +967,7 @@ Con cariño Mateo.`;
                   </div>
                   <div>
                     <span className="text-slate-400 font-semibold block text-[10px]">SOUNDTRACK INDICADO:</span>
-                    <span className="text-slate-800 font-medium">Milo J & The Weeknd</span>
+                    <span className="text-slate-800 font-medium">Milo J - M.A.I (0:46)</span>
                   </div>
                 </div>
 
@@ -936,7 +1027,7 @@ Con cariño Mateo.`;
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-gold-600 font-bold">3.</span>
-                      <span><strong>Momento especial diario:</strong> Poner tu canción favorita de Milo J o The Weeknd y sonreír.</span>
+                      <span><strong>Momento especial diario:</strong> Poner tu canción favorita de Milo J y sonreír.</span>
                     </li>
                   </ul>
                 </div>

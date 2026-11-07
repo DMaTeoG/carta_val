@@ -12,6 +12,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -80,6 +82,9 @@
   <!-- Canvas Starfield -->
   <canvas id="starfield" class="fixed inset-0 pointer-events-none z-0"></canvas>
 
+  <!-- Hidden YouTube Player Container (Audio Only) -->
+  <div id="youtube-audio-player" class="pointer-events-none absolute -top-[9999px] -left-[9999px] w-1 h-1 opacity-0"></div>
+
   <!-- Top Floating Header -->
   <header class="sticky top-2 sm:top-4 z-40 w-full max-w-4xl mx-auto px-3 sm:px-4 flex items-center justify-between gap-2">
     <div class="flex items-center gap-2 sm:gap-3 bg-space-800/80 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gold-500/30 shadow-lg">
@@ -95,10 +100,10 @@
       </div>
     </div>
 
-    <!-- Music Player Button -->
+    <!-- Music Player Button: Milo J - M.A.I -->
     <button id="musicBtn" onclick="toggleMusic()" class="flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium backdrop-blur-md transition-all duration-300 shadow-md bg-space-800/80 border-slate-700 text-slate-300 hover:border-gold-500/50">
       <i data-lucide="music" class="w-3.5 h-3.5 text-gold-400"></i>
-      <span id="musicText" class="text-[11px] sm:text-xs">Vibra Milo J & The Weeknd</span>
+      <span id="musicText" class="text-[11px] sm:text-xs font-mono">Milo J - M.A.I (0:46)</span>
     </button>
   </header>
 
@@ -174,7 +179,7 @@
       </div>
 
       <div class="pt-2">
-        <button onclick="goToStage(2)" class="group inline-flex items-center justify-center gap-2.5 px-7 sm:px-8 py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-gold-500 via-amber-400 to-gold-600 text-space-900 font-semibold text-sm sm:text-base shadow-xl shadow-gold-500/30 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto">
+        <button onclick="handleExploreClick()" class="group inline-flex items-center justify-center gap-2.5 px-7 sm:px-8 py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-gold-500 via-amber-400 to-gold-600 text-space-900 font-semibold text-sm sm:text-base shadow-xl shadow-gold-500/30 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto">
           <span>Explorar tus Estrellas</span>
           <i data-lucide="chevron-right" class="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform"></i>
         </button>
@@ -237,7 +242,7 @@
             <span id="badge-3" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border border-slate-700 bg-space-900/60 text-slate-400">Tocar para ver</span>
           </div>
           <h3 class="text-sm sm:text-base font-semibold text-slate-100 mb-0.5">Nuestra Sintonía</h3>
-          <p class="text-[11px] text-slate-400 font-medium mb-1.5">Vibra Milo J & The Weeknd</p>
+          <p class="text-[11px] text-slate-400 font-medium mb-1.5">Milo J - M.A.I</p>
           <p id="text-3" class="text-xs leading-relaxed text-slate-500 blur-[2px] select-none transition-all">
             Tu personalidad tiene ese compás perfecto: auténtica, profunda y con un estilo que se te queda grabado en el pecho todo el día.
           </p>
@@ -376,7 +381,7 @@
         </div>
       </div>
 
-      <!-- Opened Prescription Letter (Warm paper) -->
+      <!-- Opened Prescription Letter -->
       <div id="openedLetter" class="w-full prescription-paper text-slate-800 rounded-2xl p-4 sm:p-8 shadow-2xl border-2 sm:border-4 border-amber-200/80 text-left space-y-4 sm:space-y-5 relative overflow-hidden hidden">
         <div class="border-b-2 border-slate-300 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
@@ -413,7 +418,7 @@
           </div>
           <div>
             <span class="text-slate-400 font-semibold block text-[10px]">SOUNDTRACK INDICADO:</span>
-            <span class="text-slate-800 font-medium">Milo J & The Weeknd</span>
+            <span class="text-slate-800 font-medium">Milo J - M.A.I (0:46)</span>
           </div>
         </div>
 
@@ -473,7 +478,7 @@
             </li>
             <li class="flex items-start gap-2">
               <span class="text-gold-600 font-bold">3.</span>
-              <span><strong>Momento especial diario:</strong> Poner tu canción favorita de Milo J o The Weeknd y sonreír.</span>
+              <span><strong>Momento especial diario:</strong> Poner tu canción favorita de Milo J y sonreír.</span>
             </li>
           </ul>
         </div>
@@ -493,6 +498,7 @@
             <p class="text-[9px] sm:text-[10px] font-mono font-bold text-rose-700 uppercase">APROBADO CON TODO EL CARIÑO</p>
             <p class="text-[8px] sm:text-[9px] text-rose-500">Válido de por vida</p>
           </div>
+
           <div class="text-right space-y-0.5">
             <div id="letterSignature" class="font-script text-xl sm:text-2xl text-slate-900 border-b border-slate-400 pb-0.5 inline-block">
               Mateo
@@ -569,6 +575,75 @@ Con cariño Mateo.`;
       document.getElementById('footerRecipient').innerText = 'para ' + recipient;
     }
     updateDisplays();
+
+    // YouTube IFrame Player API for Milo J - M.A.I at 0:46
+    let ytPlayer = null;
+    let isPlaying = false;
+    let hasStartedAuto = false;
+
+    window.onYouTubeIframeAPIReady = function() {
+      ytPlayer = new YT.Player('youtube-audio-player', {
+        videoId: 'MldGX_mbS-o',
+        playerVars: {
+          start: 46,
+          autoplay: 0,
+          controls: 0,
+          playsinline: 1,
+          loop: 1,
+          playlist: 'MldGX_mbS-o',
+          modestbranding: 1,
+          rel: 0
+        },
+        events: {
+          onReady: function(event) {
+            event.target.seekTo(46, true);
+          },
+          onStateChange: function(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+              isPlaying = true;
+              document.getElementById('musicText').innerText = 'Milo J - M.A.I';
+              document.getElementById('musicBtn').classList.add('border-gold-400', 'text-gold-300', 'bg-gold-500/20');
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+              isPlaying = false;
+              document.getElementById('musicText').innerText = 'Milo J - M.A.I (0:46)';
+              document.getElementById('musicBtn').classList.remove('border-gold-400', 'text-gold-300', 'bg-gold-500/20');
+            }
+          }
+        }
+      });
+    };
+
+    function toggleMusic() {
+      if (ytPlayer && ytPlayer.getPlayerState) {
+        try {
+          const state = ytPlayer.getPlayerState();
+          if (state === 1) {
+            ytPlayer.pauseVideo();
+          } else {
+            if (state === -1 || state === 0 || state === 5) {
+              ytPlayer.seekTo(46, true);
+            }
+            ytPlayer.playVideo();
+          }
+          return;
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+    }
+
+    function handleExploreClick() {
+      if (!hasStartedAuto && ytPlayer && ytPlayer.playVideo) {
+        try {
+          ytPlayer.seekTo(46, true);
+          ytPlayer.playVideo();
+          hasStartedAuto = true;
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+      goToStage(2);
+    }
 
     function goToStage(stageNum) {
       document.getElementById('stage1').classList.add('hidden');
@@ -662,66 +737,6 @@ Con cariño Mateo.`;
       const box = document.getElementById('photoLightbox');
       box.classList.add('hidden');
       box.classList.remove('flex');
-    }
-
-    // Web Audio Synthesizer
-    let audioCtx = null;
-    let synthTimer = null;
-    let isPlaying = false;
-
-    function toggleMusic() {
-      if (isPlaying) {
-        if (synthTimer) clearInterval(synthTimer);
-        if (audioCtx) audioCtx.close();
-        audioCtx = null;
-        isPlaying = false;
-        document.getElementById('musicText').innerText = 'Vibra Milo J & The Weeknd';
-        document.getElementById('musicBtn').classList.remove('border-gold-400', 'text-gold-300', 'bg-gold-500/20');
-      } else {
-        try {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          audioCtx = new AudioContext();
-          const scale = [185.0, 220.0, 246.94, 277.18, 329.63, 369.99, 440.0, 493.88, 554.37, 659.25];
-          let step = 0;
-
-          const playNote = (freq) => {
-            if (!audioCtx || audioCtx.state === 'closed') return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            const filter = audioCtx.createBiquadFilter();
-
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(750, audioCtx.currentTime);
-
-            gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.05, audioCtx.currentTime + 0.3);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.0);
-
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + 3.0);
-          };
-
-          synthTimer = setInterval(() => {
-            const idx = (step * 3) % scale.length;
-            playNote(scale[idx]);
-            if (Math.random() > 0.4) playNote(scale[(idx + 4) % scale.length]);
-            step++;
-          }, 700);
-
-          isPlaying = true;
-          document.getElementById('musicText').innerText = 'Sintonía Activa';
-          document.getElementById('musicBtn').classList.add('border-gold-400', 'text-gold-300', 'bg-gold-500/20');
-        } catch(e) {
-          console.warn(e);
-        }
-      }
     }
 
     // Dynamic Starfield
@@ -839,7 +854,7 @@ Con cariño Mateo.`;
           ctx.moveTo(s.x - arm, s.y);
           ctx.lineTo(s.x + arm, s.y);
           ctx.moveTo(s.x, s.y - arm);
-          ctx.lineTo(s.x, s.y + arm);
+          ctx.lineTo(s.x + arm, s.y);
           ctx.strokeStyle = s.isGold ? `rgba(255, 230, 153, ${a * 0.7})` : `rgba(255, 255, 255, ${a * 0.7})`;
           ctx.lineWidth = 1;
           ctx.stroke();
