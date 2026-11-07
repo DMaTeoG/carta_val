@@ -15,7 +15,6 @@ import {
   Activity, 
   ChevronRight, 
   RotateCcw, 
-  Edit3, 
   Check, 
   Eye, 
   Pill, 
@@ -41,8 +40,7 @@ Por ahora, solo quería dejarte este pequeño detalle y sacarte una sonrisa.
 
 Con cariño Mateo.`;
 
-  // Customization State
-  const [isEditing, setIsEditing] = useState(false);
+  // State
   const [recipientName, setRecipientName] = useState(() => {
     const stored = localStorage.getItem('recipient_name');
     if (!stored || stored === 'Mi Futura Doctora Favorita' || stored === 'Kimberly (Val)' || stored === 'Valentina') {
@@ -90,14 +88,6 @@ Con cariño Mateo.`;
 
   // Canvas starfield animation
   const canvasRef = useRef(null);
-
-  const handleSaveEdits = () => {
-    localStorage.setItem('recipient_name', recipientName);
-    localStorage.setItem('sender_name', senderName);
-    localStorage.setItem('letter_content', letterContent);
-    setIsEditing(false);
-    triggerStarConfetti();
-  };
 
   // Initialize YouTube IFrame API for Milo J - M.A.I
   useEffect(() => {
@@ -831,69 +821,8 @@ Con cariño Mateo.`;
                 >
                   <Sparkles className="w-3.5 h-3.5" /> Estrellas
                 </button>
-
-                <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="px-3 py-1 rounded-full bg-space-800 border border-slate-700 text-slate-300 text-xs flex items-center gap-1 hover:border-gold-400 hover:text-gold-300 transition-colors"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>{isEditing ? 'Cerrar' : 'Editar'}</span>
-                </button>
               </div>
             </div>
-
-            {/* Quick Edit Panel */}
-            {isEditing && (
-              <div className="glass-card p-4 sm:p-5 rounded-2xl border border-gold-400/60 text-left space-y-3.5 shadow-2xl max-w-xl mx-auto animate-fade-in">
-                <div className="flex items-center justify-between border-b border-slate-700 pb-2">
-                  <h4 className="text-xs sm:text-sm font-semibold text-gold-300 flex items-center gap-2">
-                    <Edit3 className="w-4 h-4" /> Personaliza tu Carta & Receta
-                  </h4>
-                  <span className="text-[10px] text-slate-400">Guarda en tu navegador</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] text-slate-300 font-medium block mb-1">Nombre de Ella:</label>
-                    <input
-                      type="text"
-                      value={recipientName}
-                      onChange={(e) => setRecipientName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] text-slate-300 font-medium block mb-1">Tu Firma / Nombre:</label>
-                    <input
-                      type="text"
-                      value={senderName}
-                      onChange={(e) => setSenderName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] text-slate-300 font-medium block mb-1">Mensaje de la Carta:</label>
-                  <textarea
-                    rows={6}
-                    value={letterContent}
-                    onChange={(e) => setLetterContent(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none leading-relaxed"
-                  />
-                </div>
-
-                <div className="text-right">
-                  <button
-                    onClick={handleSaveEdits}
-                    className="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-400 text-space-900 text-xs font-semibold flex items-center gap-1.5 ml-auto"
-                  >
-                    <Check className="w-4 h-4" /> Guardar cambios
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* UNOPENED ENVELOPE */}
             {!envelopeOpened ? (

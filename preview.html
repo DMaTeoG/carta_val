@@ -324,36 +324,6 @@
           <button onclick="triggerConfetti()" class="px-3 py-1 rounded-full bg-gold-500/10 border border-gold-400/40 text-gold-300 text-xs flex items-center gap-1 hover:bg-gold-500/20">
             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Estrellas
           </button>
-          <button onclick="toggleEditor()" class="px-3 py-1 rounded-full bg-space-800 border border-slate-700 text-slate-300 text-xs flex items-center gap-1 hover:border-gold-400 hover:text-gold-300">
-            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-            <span id="editBtnText">Editar texto</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Quick Edit Panel -->
-      <div id="editPanel" class="glass-card p-4 sm:p-5 rounded-2xl border border-gold-400/60 text-left space-y-3.5 shadow-2xl max-w-xl mx-auto hidden">
-        <h4 class="text-xs sm:text-sm font-semibold text-gold-300 flex items-center gap-2">
-          <i data-lucide="edit-3" class="w-4 h-4"></i> Personaliza tu Carta & Receta
-        </h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="text-[11px] text-slate-300 font-medium block mb-1">Nombre de Ella:</label>
-            <input id="inputRecipient" type="text" class="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none" value="Valeria">
-          </div>
-          <div>
-            <label class="text-[11px] text-slate-300 font-medium block mb-1">Tu Firma / Nombre:</label>
-            <input id="inputSender" type="text" class="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none" value="Mateo">
-          </div>
-        </div>
-        <div>
-          <label class="text-[11px] text-slate-300 font-medium block mb-1">Mensaje de la Carta:</label>
-          <textarea id="inputText" rows="6" class="w-full px-3 py-2 rounded-xl bg-space-900 border border-slate-700 text-slate-100 text-xs focus:border-gold-400 outline-none leading-relaxed"></textarea>
-        </div>
-        <div class="text-right">
-          <button onclick="saveLetterEdits()" class="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-400 text-space-900 text-xs font-semibold flex items-center gap-1.5 ml-auto">
-            <i data-lucide="check" class="w-4 h-4"></i> Guardar cambios
-          </button>
         </div>
       </div>
 
@@ -694,26 +664,6 @@ Con cariño Mateo.`;
       for (let i = 0; i < 4; i++) {
         setTimeout(triggerConfetti, i * 300);
       }
-    }
-
-    function toggleEditor() {
-      const panel = document.getElementById('editPanel');
-      panel.classList.toggle('hidden');
-      document.getElementById('editBtnText').innerText = panel.classList.contains('hidden') ? 'Editar texto' : 'Cerrar editor';
-    }
-
-    function saveLetterEdits() {
-      recipient = document.getElementById('inputRecipient').value;
-      sender = document.getElementById('inputSender').value;
-      content = document.getElementById('inputText').value;
-
-      localStorage.setItem('recipient_name', recipient);
-      localStorage.setItem('sender_name', sender);
-      localStorage.setItem('letter_content', content);
-
-      updateDisplays();
-      toggleEditor();
-      triggerConfetti();
     }
 
     function triggerConfetti() {
